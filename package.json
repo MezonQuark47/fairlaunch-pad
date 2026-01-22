@@ -1,0 +1,29 @@
+{
+  "name": "fairlaunch-pad",
+  "version": "1.0.0",
+  "description": "Bot-resistant NFT launch platform powered by Ethos Network",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "ethos",
+    "nft",
+    "fairlaunch",
+    "web3",
+    "blockchain",
+    "bot-protection"
+  ],
+  "author": "Ethos Vibeathon 2025",
+  "license": "MIT"
+}
