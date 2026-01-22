@@ -3,12 +3,17 @@ import { useState, useEffect, useRef } from 'react';
 const FairLaunchPad = () => {
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
+  const [walletType, setWalletType] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [ethosScore, setEthosScore] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [countdown, setCountdown] = useState({ days: 2, hours: 14, mins: 32, secs: 45 });
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showDocsModal, setShowDocsModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const cardRef = useRef(null);
+  const howItWorksRef = useRef(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -44,10 +49,12 @@ const FairLaunchPad = () => {
     return addr;
   };
 
-  const connectWallet = () => {
+  const connectWallet = (type) => {
     const addr = generateMockWallet();
     setWalletAddress(addr);
+    setWalletType(type);
     setWalletConnected(true);
+    setShowWalletModal(false);
   };
 
   const checkEthosScore = () => {
@@ -70,9 +77,285 @@ const FairLaunchPad = () => {
   const resetDemo = () => {
     setWalletConnected(false);
     setWalletAddress('');
+    setWalletType('');
     setEthosScore(null);
     setShowResult(false);
   };
+
+  const scrollToHowItWorks = () => {
+    howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Wallet Selection Modal
+  const WalletModal = () => (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.8)',
+      backdropFilter: 'blur(10px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      animation: 'fadeIn 0.3s ease'
+    }} onClick={() => setShowWalletModal(false)}>
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(20,20,30,0.95) 0%, rgba(30,20,40,0.95) 100%)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '24px',
+        padding: '32px',
+        maxWidth: '420px',
+        width: '90%',
+        animation: 'scaleIn 0.3s ease'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: '600', fontFamily: "'Space Grotesk', sans-serif" }}>Connect Wallet</h3>
+          <button onClick={() => setShowWalletModal(false)} style={{
+            background: 'rgba(255,255,255,0.1)',
+            border: 'none',
+            borderRadius: '8px',
+            width: '32px',
+            height: '32px',
+            color: '#fff',
+            cursor: 'pointer',
+            fontSize: '18px'
+          }}>×</button>
+        </div>
+        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '24px' }}>
+          Choose your preferred wallet to connect
+        </p>
+        
+        {[
+          { name: 'MetaMask', icon: '🦊', color: '#E2761B', desc: 'Connect using MetaMask' },
+          { name: 'WalletConnect', icon: '🔗', color: '#3B99FC', desc: 'Scan with WalletConnect' },
+          { name: 'Coinbase Wallet', icon: '💰', color: '#0052FF', desc: 'Connect using Coinbase' },
+          { name: 'Phantom', icon: '👻', color: '#AB9FF2', desc: 'Connect using Phantom' },
+        ].map((wallet, i) => (
+          <button
+            key={i}
+            onClick={() => connectWallet(wallet.name)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '16px 20px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '16px',
+              marginBottom: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              color: '#fff',
+              textAlign: 'left'
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.borderColor = wallet.color;
+              e.currentTarget.style.transform = 'translateX(4px)';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.transform = 'translateX(0)';
+            }}
+          >
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: `${wallet.color}20`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '24px'
+            }}>{wallet.icon}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '2px' }}>{wallet.name}</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{wallet.desc}</div>
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '20px' }}>→</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Documentation Modal
+  const DocsModal = () => (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.8)',
+      backdropFilter: 'blur(10px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      animation: 'fadeIn 0.3s ease'
+    }} onClick={() => setShowDocsModal(false)}>
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(20,20,30,0.95) 0%, rgba(30,20,40,0.95) 100%)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '24px',
+        padding: '40px',
+        maxWidth: '600px',
+        width: '90%',
+        maxHeight: '80vh',
+        overflow: 'auto',
+        animation: 'scaleIn 0.3s ease'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '24px', fontWeight: '700', fontFamily: "'Space Grotesk', sans-serif" }}>📚 Documentation</h3>
+          <button onClick={() => setShowDocsModal(false)} style={{
+            background: 'rgba(255,255,255,0.1)',
+            border: 'none',
+            borderRadius: '8px',
+            width: '32px',
+            height: '32px',
+            color: '#fff',
+            cursor: 'pointer',
+            fontSize: '18px'
+          }}>×</button>
+        </div>
+        
+        <div style={{ marginBottom: '24px' }}>
+          <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#a5b4fc', marginBottom: '12px' }}>🔧 Integration Guide</h4>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.7', marginBottom: '16px' }}>
+            FairLaunch Pad uses Ethos Network's API to verify wallet reputation scores. 
+            Integrate our SDK to protect your NFT launches from bot attacks.
+          </p>
+          <div style={{
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '12px',
+            padding: '16px',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '13px',
+            color: '#a5b4fc',
+            marginBottom: '16px'
+          }}>
+            <code>npm install @fairlaunch/sdk</code>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '24px' }}>
+          <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#a5b4fc', marginBottom: '12px' }}>📊 Scoring Algorithm</h4>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.7' }}>
+            Ethos analyzes 50+ on-chain signals including transaction history, wallet age, 
+            DeFi interactions, NFT holdings, and social connections to generate a trust score.
+          </p>
+        </div>
+
+        <div>
+          <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#a5b4fc', marginBottom: '12px' }}>🎯 Tier Thresholds</h4>
+          <div style={{ display: 'grid', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px' }}>
+              <span style={{ color: '#fbbf24' }}>👑 Tier 1 (VIP)</span>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>Score &gt; 2,000</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(102, 126, 234, 0.1)', borderRadius: '8px' }}>
+              <span style={{ color: '#a5b4fc' }}>✅ Tier 2 (Verified)</span>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>Score 500 - 2,000</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
+              <span style={{ color: '#f87171' }}>🤖 Rejected</span>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>Score &lt; 500</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // About Ethos Modal
+  const AboutModal = () => (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.8)',
+      backdropFilter: 'blur(10px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      animation: 'fadeIn 0.3s ease'
+    }} onClick={() => setShowAboutModal(false)}>
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(20,20,30,0.95) 0%, rgba(30,20,40,0.95) 100%)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '24px',
+        padding: '40px',
+        maxWidth: '600px',
+        width: '90%',
+        animation: 'scaleIn 0.3s ease'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '24px', fontWeight: '700', fontFamily: "'Space Grotesk', sans-serif" }}>🌐 About Ethos Network</h3>
+          <button onClick={() => setShowAboutModal(false)} style={{
+            background: 'rgba(255,255,255,0.1)',
+            border: 'none',
+            borderRadius: '8px',
+            width: '32px',
+            height: '32px',
+            color: '#fff',
+            cursor: 'pointer',
+            fontSize: '18px'
+          }}>×</button>
+        </div>
+        
+        <div style={{
+          width: '80px',
+          height: '80px',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '40px',
+          margin: '0 auto 24px',
+          boxShadow: '0 20px 40px rgba(102, 126, 234, 0.3)'
+        }}>⚡</div>
+
+        <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.8', textAlign: 'center', marginBottom: '24px' }}>
+          <strong style={{ color: '#fff' }}>Ethos Network</strong> is the reputation layer for Web3. 
+          We analyze on-chain activity to create trust scores that help protocols 
+          distinguish genuine users from bots and bad actors.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+          {[
+            { num: '50M+', label: 'Wallets Scored' },
+            { num: '200+', label: 'Partners' },
+            { num: '99.2%', label: 'Bot Detection' }
+          ].map((stat, i) => (
+            <div key={i} style={{ textAlign: 'center', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#a5b4fc', fontFamily: "'Space Grotesk', sans-serif" }}>{stat.num}</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <a 
+          href="https://ethos.network" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            padding: '14px 24px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '12px',
+            color: '#fff',
+            textDecoration: 'none',
+            fontWeight: '600',
+            fontSize: '14px'
+          }}
+        >
+          Visit Ethos Network →
+        </a>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{
@@ -86,28 +369,11 @@ const FairLaunchPad = () => {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        :root {
-          --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-          --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-          --gradient-gold: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
-          --glass: rgba(255, 255, 255, 0.03);
-          --glass-border: rgba(255, 255, 255, 0.08);
-          --text-primary: #ffffff;
-          --text-secondary: rgba(255, 255, 255, 0.6);
-          --text-muted: rgba(255, 255, 255, 0.4);
-        }
-
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(2deg); }
-        }
-
-        @keyframes pulse-ring {
-          0% { transform: scale(0.8); opacity: 1; }
-          100% { transform: scale(2); opacity: 0; }
         }
 
         @keyframes gradient-shift {
@@ -115,14 +381,14 @@ const FairLaunchPad = () => {
           50% { background-position: 100% 50%; }
         }
 
-        @keyframes scan {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(400%); }
-        }
-
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         @keyframes fadeInUp {
@@ -140,14 +406,8 @@ const FairLaunchPad = () => {
           to { opacity: 1; transform: scale(1) rotateX(0); }
         }
 
-        @keyframes borderRotate {
-          0% { --angle: 0deg; }
-          100% { --angle: 360deg; }
-        }
-
-        @keyframes glow {
-          0%, 100% { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.4)); }
-          50% { filter: drop-shadow(0 0 40px rgba(102, 126, 234, 0.8)); }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
 
         .glass-card {
@@ -183,21 +443,6 @@ const FairLaunchPad = () => {
           font-family: 'Space Grotesk', sans-serif;
         }
 
-        .btn-primary::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-          transition: left 0.5s;
-        }
-
-        .btn-primary:hover::before {
-          left: 100%;
-        }
-
         .btn-primary:hover {
           transform: translateY(-3px);
           box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
@@ -219,6 +464,22 @@ const FairLaunchPad = () => {
         .btn-secondary:hover {
           background: rgba(255,255,255,0.05);
           border-color: rgba(255,255,255,0.4);
+        }
+
+        .nav-link {
+          color: rgba(255,255,255,0.6);
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 500;
+          transition: color 0.3s;
+          cursor: pointer;
+          background: none;
+          border: none;
+          font-family: inherit;
+        }
+
+        .nav-link:hover {
+          color: #fff;
         }
 
         .stat-card {
@@ -266,10 +527,6 @@ const FairLaunchPad = () => {
           animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
         .progress-bar {
           height: 4px;
           background: rgba(255,255,255,0.1);
@@ -297,25 +554,15 @@ const FairLaunchPad = () => {
           font-weight: 500;
           color: #a5b4fc;
         }
-
-        .feature-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 16px 20px;
-          background: rgba(255,255,255,0.02);
-          border-radius: 12px;
-          transition: all 0.3s ease;
-        }
-
-        .feature-item:hover {
-          background: rgba(255,255,255,0.05);
-        }
       `}</style>
+
+      {/* Modals */}
+      {showWalletModal && <WalletModal />}
+      {showDocsModal && <DocsModal />}
+      {showAboutModal && <AboutModal />}
 
       {/* Ambient Background */}
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        {/* Gradient Orbs */}
         <div style={{
           position: 'absolute',
           top: '-20%',
@@ -350,7 +597,6 @@ const FairLaunchPad = () => {
           animation: 'float 10s ease-in-out infinite'
         }} />
         
-        {/* Grid Pattern */}
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -360,14 +606,6 @@ const FairLaunchPad = () => {
           `,
           backgroundSize: '80px 80px',
           maskImage: 'radial-gradient(ellipse at center, black 0%, transparent 70%)'
-        }} />
-
-        {/* Noise Texture */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          opacity: 0.03,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
         }} />
       </div>
 
@@ -402,9 +640,9 @@ const FairLaunchPad = () => {
         </div>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-          <a href="#" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'color 0.3s' }}>How It Works</a>
-          <a href="#" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'color 0.3s' }}>Documentation</a>
-          <a href="#" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'color 0.3s' }}>About Ethos</a>
+          <button className="nav-link" onClick={scrollToHowItWorks}>How It Works</button>
+          <button className="nav-link" onClick={() => setShowDocsModal(true)}>Documentation</button>
+          <button className="nav-link" onClick={() => setShowAboutModal(true)}>About Ethos</button>
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -503,7 +741,6 @@ const FairLaunchPad = () => {
             position: 'relative'
           }}
         >
-          {/* Mouse follow gradient */}
           <div style={{
             position: 'absolute',
             width: '400px',
@@ -629,7 +866,7 @@ const FairLaunchPad = () => {
           <div style={{ position: 'relative', zIndex: 1 }}>
             {!walletConnected ? (
               <div style={{ textAlign: 'center' }}>
-                <button className="btn-primary" onClick={connectWallet}>
+                <button className="btn-primary" onClick={() => setShowWalletModal(true)}>
                   Connect Wallet
                 </button>
                 <p style={{ marginTop: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>
@@ -646,7 +883,7 @@ const FairLaunchPad = () => {
                   background: 'rgba(102, 126, 234, 0.1)',
                   border: '1px solid rgba(102, 126, 234, 0.2)',
                   borderRadius: '12px',
-                  marginBottom: '32px'
+                  marginBottom: '16px'
                 }}>
                   <div style={{
                     width: '10px',
@@ -658,13 +895,18 @@ const FairLaunchPad = () => {
                   <span style={{ fontSize: '14px', fontFamily: "'JetBrains Mono', monospace", color: 'rgba(255,255,255,0.8)' }}>
                     {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
                   </span>
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', padding: '4px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
+                    {walletType}
+                  </span>
                 </div>
 
                 {!isChecking ? (
                   <>
-                    <button className="btn-secondary" onClick={checkEthosScore}>
-                      ⚡ Verify Ethos Score
-                    </button>
+                    <div>
+                      <button className="btn-secondary" onClick={checkEthosScore}>
+                        ⚡ Verify Ethos Score
+                      </button>
+                    </div>
                     <p style={{ marginTop: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>
                       Analyze your on-chain reputation
                     </p>
@@ -829,7 +1071,7 @@ const FairLaunchPad = () => {
         </div>
 
         {/* How It Works */}
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div ref={howItWorksRef} style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h3 style={{
               fontSize: '32px',
